@@ -39,22 +39,26 @@
   // A major update that needs code changes fails CI and holds the pull
   // request for a person.
   separateMajorMinor: false,
+
+  // Indirect Go modules aren't updated with the rest, as Renovate's default:
+  // their versions follow what the modules requiring them were built
+  // against. A known vulnerability in one, from the OSV database, gets
+  // updated to the lowest fixed version instead, and all of a repository's
+  // vulnerability fixes share one pull request.
+  osvVulnerabilityAlerts: true,
+  vulnerabilityAlerts: {
+    groupName: 'vulnerability fixes',
+  },
+
   packageRules: [
     {
-      // Renovate skips indirect Go modules by default, but govulncheck in CI
-      // fails on their vulnerabilities too, so they're kept current.
-      matchManagers: ['gomod'],
-      matchDepTypes: ['indirect'],
-      enabled: true,
-    },
-    {
-      // A major version of a Go module from v1 on is a different module, and
-      // which one an indirect dependency uses is up to the module that
-      // requires it. Moving from v0 to v1 keeps the module path.
+      // A Go module's v2 and later are different modules, so moving an
+      // indirect dependency to one can't fix it. Moving from v0 to v1 keeps
+      // the module path.
       matchManagers: ['gomod'],
       matchDepTypes: ['indirect'],
       matchUpdateTypes: ['major'],
-      matchCurrentVersion: '>=1.0.0',
+      matchNewValue: '!/^v1\\./',
       enabled: false,
     },
     {
