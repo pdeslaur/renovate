@@ -33,7 +33,9 @@
   automergeStrategy: 'squash',
   platformAutomerge: true,
 
-  postUpdateOptions: ['gomodTidy'],
+  // Renovate skips go mod tidy for a major update unless it also updates
+  // import paths, and a v0 to v1 update counts as major.
+  postUpdateOptions: ['gomodTidy', 'gomodUpdateImportPaths'],
 
   // Each ecosystem's updates, major ones included, share one pull request.
   // A major update that needs code changes fails CI and holds the pull
