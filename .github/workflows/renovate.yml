@@ -1,0 +1,54 @@
+name: Renovate
+# Runs Renovate against each repository in the matrix, one job per
+# repository.
+#
+# Each job gets its token from octo-sts rather than a personal access token.
+# The token is scoped to that one repository, under the "renovate" identity,
+# whose trust policy lives in the repository at
+# .github/chainguard/renovate.sts.yaml and only trusts this workflow as it is
+# on main. Pull requests opened with that token trigger CI, which pull
+# requests opened with GITHUB_TOKEN don't.
+#
+# To add a repository: add its trust policy, then add it to the matrix.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      log-level:
+        description: Renovate's log level
+        type: choice
+        options: [info, debug]
+        default: info
+permissions: {}
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # for octo-sts
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        repository:
+          - pdeslaur/renovate
+          - pdeslaur/caddy-pocketid
+    concurrency:
+      group: renovate-${{ matrix.repository }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05 # v1.1.1
+        id: octo-sts
+        with:
+          scope: ${{ matrix.repository }}
+          identity: renovate
+      - uses: renovatebot/github-action@ebcbb513d07ead4d9c0c2139064301db05e84a3e # v46.3.15
+        with:
+          configurationFile: config.json5
+          token: ${{ steps.octo-sts.outputs.token }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ matrix.repository }}
+          LOG_LEVEL: ${{ inputs.log-level || 'info' }}

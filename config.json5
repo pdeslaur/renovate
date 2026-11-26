@@ -1,0 +1,44 @@
+// Renovate's configuration for every repository the workflow runs against.
+// A repository can add or override settings with its own renovate.json, but
+// needs none.
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  platform: 'github',
+  onboarding: false,
+  requireConfig: 'optional',
+
+  // Commits go through GitHub's API, so GitHub signs them as octo-sts[bot],
+  // the app whose token Renovate runs with.
+  platformCommit: 'enabled',
+  gitAuthor: 'octo-sts[bot] <157150467+octo-sts[bot]@users.noreply.github.com>',
+
+  extends: [
+    'config:recommended',
+    'helpers:pinGitHubActionDigests',
+    ':semanticCommits',
+    ':semanticCommitTypeAll(chore)',
+  ],
+
+  // Auto-merge uses GitHub's own auto-merge, so a pull request merges once
+  // the branch's required checks pass.
+  automergeType: 'pr',
+  automergeStrategy: 'squash',
+  platformAutomerge: true,
+
+  postUpdateOptions: ['gomodTidy'],
+
+  packageRules: [
+    {
+      matchManagers: ['github-actions'],
+      groupName: 'GitHub Actions',
+      automerge: true,
+    },
+    {
+      // Not auto-merged: module updates bring in code nobody here has read,
+      // so a person merges them.
+      matchManagers: ['gomod'],
+      groupName: 'Go modules',
+      automerge: false,
+    },
+  ],
+}
