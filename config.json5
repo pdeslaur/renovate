@@ -19,18 +19,17 @@
     ':semanticCommitTypeAll(chore)',
   ],
 
-  // Auto-merge uses GitHub's own auto-merge, so a pull request merges once
-  // the branch's required checks pass.
+  // Every update auto-merges, through GitHub's own auto-merge, once the
+  // branch's required checks pass.
+  automerge: true,
   automergeType: 'pr',
   automergeStrategy: 'squash',
   platformAutomerge: true,
 
   postUpdateOptions: ['gomodTidy'],
 
-  // Opens pull requests for dependencies with known vulnerabilities, from
-  // the OSV database, without waiting for the schedule or grouping.
-  osvVulnerabilityAlerts: true,
-
+  // Each ecosystem's updates share one pull request. Major updates still get
+  // their own, since they usually need code changes.
   packageRules: [
     {
       // Renovate skips indirect Go modules by default, but govulncheck in CI
@@ -42,14 +41,10 @@
     {
       matchManagers: ['github-actions'],
       groupName: 'GitHub Actions',
-      automerge: true,
     },
     {
-      // Not auto-merged: module updates bring in code nobody here has read,
-      // so a person merges them.
       matchManagers: ['gomod'],
       groupName: 'Go modules',
-      automerge: false,
     },
   ],
 }
