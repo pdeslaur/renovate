@@ -27,7 +27,18 @@
 
   postUpdateOptions: ['gomodTidy'],
 
+  // Opens pull requests for dependencies with known vulnerabilities, from
+  // the OSV database, without waiting for the schedule or grouping.
+  osvVulnerabilityAlerts: true,
+
   packageRules: [
+    {
+      // Renovate skips indirect Go modules by default, but govulncheck in CI
+      // fails on their vulnerabilities too, so they're kept current.
+      matchManagers: ['gomod'],
+      matchDepTypes: ['indirect'],
+      enabled: true,
+    },
     {
       matchManagers: ['github-actions'],
       groupName: 'GitHub Actions',
