@@ -18,6 +18,13 @@
     ':semanticCommits',
     ':semanticCommitTypeAll(chore)',
   ],
+  // config:recommended groups monorepos and some well-known packages into
+  // pull requests of their own, which would split an ecosystem's updates.
+  ignorePresets: ['group:monorepos', 'group:recommended'],
+
+  // Grouping keeps the number of pull requests small, so they aren't
+  // rate-limited.
+  prHourlyLimit: 0,
 
   // Every update auto-merges, through GitHub's own auto-merge, once the
   // branch's required checks pass.
@@ -28,8 +35,10 @@
 
   postUpdateOptions: ['gomodTidy'],
 
-  // Each ecosystem's updates share one pull request. Major updates still get
-  // their own, since they usually need code changes.
+  // Each ecosystem's updates, major ones included, share one pull request.
+  // A major update that needs code changes fails CI and holds the pull
+  // request for a person.
+  separateMajorMinor: false,
   packageRules: [
     {
       // Renovate skips indirect Go modules by default, but govulncheck in CI
@@ -37,6 +46,16 @@
       matchManagers: ['gomod'],
       matchDepTypes: ['indirect'],
       enabled: true,
+    },
+    {
+      // A major version of a Go module from v1 on is a different module, and
+      // which one an indirect dependency uses is up to the module that
+      // requires it. Moving from v0 to v1 keeps the module path.
+      matchManagers: ['gomod'],
+      matchDepTypes: ['indirect'],
+      matchUpdateTypes: ['major'],
+      matchCurrentVersion: '>=1.0.0',
+      enabled: false,
     },
     {
       matchManagers: ['github-actions'],
