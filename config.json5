@@ -29,6 +29,11 @@
   // Every update auto-merges, through GitHub's own auto-merge, once the
   // branch's required checks pass.
   automerge: true,
+
+  // A release is only proposed once it's two days old, so a compromised or
+  // broken release has time to be noticed and pulled before it auto-merges.
+  // Vulnerability fixes don't wait.
+  minimumReleaseAge: '2 days',
   automergeType: 'pr',
   automergeStrategy: 'squash',
   platformAutomerge: true,
